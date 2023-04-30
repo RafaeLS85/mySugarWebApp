@@ -1,11 +1,11 @@
 import axios from 'axios'
-import { Product } from "./types";
+import { Values } from "./types";
 import Papa from 'papaparse'
 
 const URL = process.env.NEXT_PUBLIC_URL;
 
 const api = {
-    list: async (): Promise<Product[] | []> => {
+    list: async (): Promise<Values[] | []> => {
 
         console.log('api call')
 
@@ -14,15 +14,13 @@ const api = {
         return axios
         .get(URL, { responseType: 'blob'})
         .then(res => {
-            return new Promise<Product[]>((resolve, reject) => {
+            return new Promise<Values[]>((resolve, reject) => {
                 Papa.parse(res.data, {
                     header: true,
                     complete: results => {
-                        const products = results.data as Product[]
-                        return resolve( products.map(product => ({
-                            ...product,
-                            price: Number(product.price)
-                        })))
+                        const products = results.data as Values[]
+                        return resolve( products.map(value => ({
+                            ...value                        })))
                     },
                     error: error => reject(error.message),
                 })
