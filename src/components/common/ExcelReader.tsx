@@ -1,22 +1,22 @@
+import { ExcelSheets } from "@/models";
 import React, { useState, useRef } from "react";
 import * as XLSX from "xlsx";
 
 interface Props {
-  onFileUploaded: (data) => void
+  onFileUploaded: (data: ExcelSheets) => void
 }
-
 
 export const ExcelReader = ({ onFileUploaded }: Props) => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState(null);
   const [sheetNames, setSheetNames] = useState<string[]>([]);
-  const [sheetData, setSheetData] = useState({});
+  const [sheetData, setSheetData] = useState<ExcelSheets>();
 
   const acceptedFiles = ["xlsx", "xls"];
 
   const fileRef = useRef() as React.MutableRefObject<HTMLInputElement>;
 
-  let mySheetData = {};
+  let mySheetData: ExcelSheets;
 
   const checkFileName = (name: string): Boolean => {
     if (!name) return false;
@@ -24,18 +24,16 @@ export const ExcelReader = ({ onFileUploaded }: Props) => {
   };
 
   const readDataFromFile = (data: ArrayBuffer) => {
-    const workbook = XLSX.read(data);
+    
+    const workbook = XLSX.read(data, {type: 'binary',cellDates: true });
     setSheetNames(workbook.SheetNames);
-    // loop through the sheets
 
     workbook.SheetNames.forEach((sheetName) => {
-      console.log(sheetName);
       const workSheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(workSheet);
       mySheetData[sheetName] = jsonData;
     });
 
-    // assign data from sheet into objects
     setSheetData(mySheetData);
     return mySheetData;
   };
@@ -49,15 +47,11 @@ export const ExcelReader = ({ onFileUploaded }: Props) => {
       return;
     }
 
-    //read xlsx
     const data: ArrayBuffer = await myFile.arrayBuffer();
-
     const mySheetData = readDataFromFile(data);
 
-    // assign the sheets
     setFile(myFile);
     setFileName(myFile.name);
-
     onFileUploaded(mySheetData);
   };
 
